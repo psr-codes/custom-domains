@@ -57,7 +57,7 @@ export async function generateMetadata({
     };
 }
 
-export default async function SiteLayout({
+export default function SiteLayout({
     params,
     children,
 }: {
