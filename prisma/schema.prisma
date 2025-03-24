@@ -18,13 +18,13 @@ model User {
 }
 
 model Site {
-  id                 String  @id @default(cuid())
-  subdomain          String  @unique
-  description        String?
-  owner              User    @relation(fields: [ownerWalletAddress], references: [walletAddress])
+  id                 String @id @default(cuid())
+  subdomain          String @unique
+  description        String
+  owner              User   @relation(fields: [ownerWalletAddress], references: [walletAddress])
   ownerWalletAddress String
   name               String
-  logoUrl            String?
+  logoUrl            String
 
   // Common Fields (Used by 90%+ sites)
   tokenomics Json @default("{}")

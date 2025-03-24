@@ -3,6 +3,8 @@
 import prisma from "@/lib/prisma"; // Your Prisma client instance
 import { Site, User, Transaction } from "@prisma/client";
 
+// ***************** create data ************************
+
 export const createUserAction = async (userWalletAddress: string) => {
     try {
         let user = await prisma.user.findUnique({
@@ -52,6 +54,7 @@ export const createSiteAction = async (
             data: {
                 name: formData.name,
                 subdomain: formData.subdomain,
+                description: formData.description,
                 logoUrl: formData.logo,
                 socials: formData.socials, // Store as JSON
                 tokenomics: formData.tokenomics, // Store as JSON
@@ -93,5 +96,20 @@ export const createTransactionAction = async (
     } catch (error) {
         console.error("Transaction creation failed:", error);
         throw new Error("Failed to record transaction");
+    }
+};
+
+// ***************** fetch data ************************
+
+export const fetchSiteDataAction = async (subdomain: string) => {
+    try {
+        return await prisma.site.findUnique({
+            where: {
+                subdomain: subdomain, // Replace with actual subdomain
+            },
+        });
+    } catch (error) {
+        console.error("Error fetching site data:", error);
+        throw new Error("Failed to fetch site data");
     }
 };

@@ -18,7 +18,7 @@ export default async function SitePage({
 
     return (
         <div>
-            <h1>{site.displayName}</h1>
+            <h1>{site.name}</h1>
             <img
                 src={site.logoUrl || "/logo.png"}
                 alt={`${site.name} logo`}
