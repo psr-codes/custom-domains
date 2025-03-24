@@ -8,12 +8,11 @@ import { Metadata } from "next";
 export async function generateMetadata({
     params,
 }: {
-    params: { domain: string };
+    params: { subdomain: string }; // Correct param name
 }): Promise<Metadata | null> {
-    const domain = decodeURIComponent(params.domain);
-    // const data = await getSiteData(domain);
-
-    const data = { name: "Company", logo: "/logo.png" }; // Example data
+    const subdomain = decodeURIComponent(params.subdomain);
+    // const data = await getSiteData(subdomain);
+    const data = { name: "Company", logo: "/logo.png" };
 
     if (!data) {
         return null;
@@ -46,7 +45,7 @@ export async function generateMetadata({
             creator: "@vercel",
         },
         icons: [logo],
-        metadataBase: new URL(`https://${domain}`),
+        metadataBase: new URL(`https://${subdomain}`),
         // Optional: Set canonical URL to custom domain if it exists
         // ...(params.domain.endsWith(`.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) &&
         //   data.customDomain && {
@@ -61,12 +60,12 @@ export default function SiteLayout({
     params,
     children,
 }: {
-    params: { domain: string };
+    params: { subdomain: string }; // Correct param name
     children: ReactNode;
 }) {
-    const domain = decodeURIComponent(params.domain);
-    // const data = await getSiteData(domain);
-    const data = { name: "Company", logo: "/logo.png" }; // Example data
+    const subdomain = decodeURIComponent(params.subdomain);
+    // const data = await getSiteData(subdomain);
+    const data = { name: "Company", logo: "/logo.png" };
 
     if (!data) {
         notFound();
