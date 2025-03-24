@@ -3,9 +3,10 @@ import prisma from "@/lib/prisma";
 export default async function SitePage({
     params,
 }: {
-    params: { subdomain: string };
+    params: Promise<{ subdomain: string }>;
 }) {
-    const { subdomain } = params;
+    // Await the params to resolve the subdomain value.
+    const { subdomain } = await params;
 
     // Fetch site data from the database
     const site = await prisma.site.findUnique({
@@ -19,10 +20,7 @@ export default async function SitePage({
     return (
         <div>
             <h1>{site.name}</h1>
-            <img
-                src={site.logoUrl || "/logo.png"}
-                alt={`${site.name} logo`}
-            />{" "}
+            <img src={site.logoUrl || "/logo.png"} alt={`${site.name} logo`} />
         </div>
     );
 }
