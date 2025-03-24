@@ -1,50 +1,42 @@
-import Image from "next/image";
-import Link from "next/link";
 import { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 
+type Params = Promise<{ subdomain: string }>;
+
 export async function generateMetadata({
     params,
 }: {
-    params: { subdomain: string };
-}): Promise<Metadata | null> {
-    const subdomain = decodeURIComponent(params.subdomain);
-    // Replace with your data fetching logic as needed
-    const data = { name: "Company", logo: "/logo.png" };
+    params: Params;
+}): Promise<Metadata> {
+    const { subdomain } = await params;
+    const decodedSubdomain = decodeURIComponent(subdomain);
 
-    if (!data) {
-        return null;
-    }
-    const {
-        name: title,
-        description,
-        image,
-        logo,
-    } = data as {
-        name: string;
-        description: string;
-        image: string;
-        logo: string;
+    // Replace with actual data fetching
+    const data = {
+        name: "Company",
+        description: "Default description",
+        image: "/og-image.png",
+        logo: "/logo.png",
     };
 
     return {
-        title,
-        description,
+        title: data.name,
+        description: data.description,
         openGraph: {
-            title,
-            description,
-            images: [image],
+            title: data.name,
+            description: data.description,
+            images: [data.image],
         },
         twitter: {
             card: "summary_large_image",
-            title,
-            description,
-            images: [image],
+            title: data.name,
+            description: data.description,
+            images: [data.image],
             creator: "@vercel",
         },
-        icons: [logo],
-        metadataBase: new URL(`https://${subdomain}`),
+        icons: [data.logo],
+        metadataBase: new URL(`https://${decodedSubdomain}`),
     };
 }
 
@@ -52,15 +44,13 @@ export default async function SiteLayout({
     params,
     children,
 }: {
-    // Accept either a resolved object or a promise for it.
-    params: { subdomain: string } | Promise<{ subdomain: string }>;
+    params: Params;
     children: ReactNode;
 }) {
-    // Await the params to satisfy Next.js's asynchronous API.
-    const resolvedParams = await Promise.resolve(params);
-    const subdomain = decodeURIComponent(resolvedParams.subdomain);
+    const { subdomain } = await params;
+    const decodedSubdomain = decodeURIComponent(subdomain);
 
-    // Replace with your data fetching logic as needed
+    // Replace with actual data fetching
     const data = { name: "Company", logo: "/logo.png" };
 
     if (!data) {
