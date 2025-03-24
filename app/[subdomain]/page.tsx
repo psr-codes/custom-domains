@@ -1,26 +1,19 @@
 import A from "@/components/templates/test-templates/A";
 import { getSubdomain } from "@/lib/utils";
-export default function SitePage({
+
+export default async function SitePage({
     params,
 }: {
-    params: { subdomain: string };
+    params: Promise<{ subdomain: string }>;
 }) {
-    const { subdomain } = params;
-
+    // Await the params before destructuring
+    const { subdomain } = await params;
     const sub_domain = getSubdomain(subdomain) as string;
     console.log("sub_domain", sub_domain);
 
-    // Fetch site data from the database
-    // const site = await prisma.site.findUnique({
-    //     where: { subdomain },
-    // });
-
-    // if (!site) {
-    //     return <div>{subdomain} Site not found</div>;
-    // }
-
+    // Fetch site data as needed...
     return (
-        <div className="  ">
+        <div>
             <A subdomain={sub_domain} />
         </div>
     );
