@@ -39,20 +39,12 @@ export default function Nav({ children }: { children: ReactNode }) {
     const { publicKey } = useWallet();
 
     const segments = useSelectedLayoutSegments();
-    const { id } = useParams() as { id?: string };
+    const { subdomain } = useParams() as { subdomain?: string };
 
-    const [siteId, setSiteId] = useState<string | null>("site-id-123");
-
-    // useEffect(() => {
-    //   if (segments[0] === "post" && id) {
-    //     getSiteFromPostId(id).then((id) => {
-    //       setSiteId(id);
-    //     });
-    //   }
-    // }, [segments, id]);
+    const [siteId, setSiteId] = useState<string | null>("site-subdomain-123");
 
     const tabs = useMemo(() => {
-        if (segments[0] === "site" && id) {
+        if (segments[0] === "site" && subdomain) {
             return [
                 {
                     name: "Back to All Sites",
@@ -60,42 +52,20 @@ export default function Nav({ children }: { children: ReactNode }) {
                     icon: <ArrowLeft width={18} />,
                 },
                 {
-                    name: "Posts",
-                    href: `/dashboard/site/${id}`,
+                    name: "Edit Site",
+                    href: `/dashboard/site/${subdomain}`,
                     isActive: segments.length === 2,
                     icon: <Newspaper width={18} />,
                 },
                 {
-                    name: "Analytics",
-                    href: `/dashboard/site/${id}/analytics`,
+                    name: "Templates",
+                    href: `/dashboard/site/${subdomain}/templates`,
                     isActive: segments.includes("analytics"),
                     icon: <BarChart3 width={18} />,
                 },
                 {
                     name: "Settings",
-                    href: `/dashboard/site/${id}/settings`,
-                    isActive: segments.includes("settings"),
-                    icon: <Settings width={18} />,
-                },
-            ];
-        } else if (segments[0] === "post" && id) {
-            return [
-                {
-                    name: "Back to All Posts",
-                    href: siteId
-                        ? `/dashboard/site/${siteId}`
-                        : "/dashboard/sites",
-                    icon: <ArrowLeft width={18} />,
-                },
-                {
-                    name: "Editor",
-                    href: `/dashboard/post/${id}`,
-                    isActive: segments.length === 2,
-                    icon: <Edit3 width={18} />,
-                },
-                {
-                    name: "Settings",
-                    href: `/dashboard/post/${id}/settings`,
+                    href: `/dashboard/site/${subdomain}/settings`,
                     isActive: segments.includes("settings"),
                     icon: <Settings width={18} />,
                 },
@@ -121,7 +91,7 @@ export default function Nav({ children }: { children: ReactNode }) {
                 icon: <Settings width={18} />,
             },
         ];
-    }, [segments, id, siteId]);
+    }, [segments, subdomain]);
 
     const [showSidebar, setShowSidebar] = useState(false);
 

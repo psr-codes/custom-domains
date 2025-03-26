@@ -3,14 +3,11 @@ import Sites from "@/components/others/sites";
 import PlaceholderCard from "@/components/others/placeholder-card";
 import CreateSiteButton from "@/components/others/create-site-button";
 import CreateSiteModal from "@/components/modal/create-site";
-
 export default async function AllSites({
     params,
 }: {
-    params: Promise<{ id: string }>;
+    params: Promise<{ subdomain: string }>;
 }) {
-    const { id } = await params;
-
     return (
         <div className="flex max-w-screen-xl flex-col space-y-12 p-8">
             <div className="flex flex-col space-y-6">
@@ -31,8 +28,7 @@ export default async function AllSites({
                         </div>
                     }
                 >
-                    {/* @ts-expect-error Server Component */}
-                    <Sites siteId={decodeURIComponent(id)} />
+                    <Sites />
                 </Suspense>
             </div>
         </div>

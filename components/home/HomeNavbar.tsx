@@ -25,7 +25,7 @@ export default function HomeNavbar() {
                 ) : (
                     ""
                 )}
-                <WalletMultiButton style={{}} />
+                <WalletMultiButton />
             </div>
         </div>
     );

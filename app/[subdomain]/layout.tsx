@@ -28,24 +28,59 @@ export async function generateMetadata({
         logo: string;
     };
 
-    return {
-        title,
-        description,
-        openGraph: {
-            title,
+    const baseUrl =
+        process.env.NODE_ENV === "development"
+            ? `http://${subdomain}.localhost:3000`
+            : `https://${subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`;
+
+    // return {
+    //     title,
+    //     description,
+    //     openGraph: {
+    //         title,
+    //         description,
+    //         images: [image],
+    //     },
+    //     twitter: {
+    //         card: "summary_large_image",
+    //         title,
+    //         description,
+    //         images: [image],
+    //         creator: "@vercel",
+    //     },
+    //     icons: [logo],
+    //     metadataBase: new URL(baseUrl),
+    // };
+
+    try {
+        return {
+            title: "Your Site Title",
             description,
-            images: [image],
-        },
-        twitter: {
-            card: "summary_large_image",
-            title,
-            description,
-            images: [image],
-            creator: "@vercel",
-        },
-        icons: [logo],
-        metadataBase: new URL(`https://${subdomain}`),
-    };
+            openGraph: {
+                title,
+                description,
+                images: [image],
+            },
+            twitter: {
+                card: "summary_large_image",
+                title,
+                description,
+                images: [image],
+                creator: "@vercel",
+            },
+            icons: [logo],
+            metadataBase: new URL(baseUrl),
+        };
+    } catch (error) {
+        console.error("Invalid URL construction:", error);
+        return {
+            // title: "Fallback Title",
+            title: data?.name,
+            metadataBase: new URL(
+                process.env.NEXT_PUBLIC_FALLBACK_URL || "http://localhost:3000"
+            ),
+        };
+    }
 }
 
 export default async function SiteLayout({

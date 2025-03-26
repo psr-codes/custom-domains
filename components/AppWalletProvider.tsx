@@ -1,42 +1,56 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, type ReactNode } from "react";
+import dynamic from "next/dynamic";
+
 import {
-  ConnectionProvider,
-  WalletProvider,
+    ConnectionProvider,
+    WalletProvider,
 } from "@solana/wallet-adapter-react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { clusterApiUrl } from "@solana/web3.js";
-// import { UnsafeBurnerWalletAdapter } from "@solana/wallet-adapter-wallets";
+import "@solana/wallet-adapter-react-ui/styles.css";
 
-// Default styles that can be overridden by your app
-import '@solana/wallet-adapter-react-ui/styles.css';
+// Dynamically import the modal component with SSR disabled
+const WalletModalProviderDynamic = dynamic(
+    () =>
+        import("@solana/wallet-adapter-react-ui").then(
+            (mod) => mod.WalletModalProvider
+        ),
+    { ssr: false }
+);
 
-
-
-// imports here
+interface AppWalletProviderProps {
+    children: ReactNode;
+}
 
 export default function AppWalletProvider({
     children,
-  }: {
-    children: React.ReactNode;
-  }) {
+}: AppWalletProviderProps) {
+    // Memoize network configuration
     const network = WalletAdapterNetwork.Devnet;
     const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+
+    // Memoize wallets list with production-safe adapters
     const wallets = useMemo(
-      () => [
-        // manually add any legacy wallet adapters here
-        // new UnsafeBurnerWalletAdapter(),
-      ],
-      [network],
+        () => [
+            // new PhantomWalletAdapter(),
+            // Add other production-ready wallets
+            // new SolflareWalletAdapter(),
+            // new BackpackWalletAdapter()
+        ],
+        [network]
     );
-  
+
     return (
-      <ConnectionProvider endpoint={endpoint}>
-        <WalletProvider wallets={wallets} autoConnect>
-          <WalletModalProvider>{children}</WalletModalProvider>
-        </WalletProvider>
-      </ConnectionProvider>
+        <ConnectionProvider endpoint={endpoint}>
+            <WalletProvider wallets={wallets} autoConnect>
+                {/* Wrap in Suspense to prevent SSR hydration mismatch */}
+                <WalletModalProviderDynamic>
+                    {children}
+                </WalletModalProviderDynamic>
+            </WalletProvider>
+        </ConnectionProvider>
     );
-  }
+}

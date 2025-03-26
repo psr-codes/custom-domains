@@ -1,554 +1,484 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import { Copy, CheckCircle } from "lucide-react";
-import { toast } from "sonner";
 import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { sanitizeSocialUrl } from "@/lib/utils";
-import { fetchSiteDataAction } from "@/lib/actions/actions";
-import { Site } from "@prisma/client";
+// import { button } from "@/components/ui/button";
+import { ArrowRight, Twitter, Menu, X } from "lucide-react";
 
-interface SectionProps {
-    id: string;
-    title?: string;
-    slideFrom: "left" | "right";
-    children?: React.ReactNode;
-}
+export default function Home() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-// const siteData = {
-//     name: "Trump Coin",
-//     subdomain: "trump-coin",
-//     description:
-//         "BabyBaby is a community made and owned cryptocurrency project. We are aspiring to become the new high quality standard within the Crypto Space. A group of like minded individuals have come together to create the new golden standard of what a community should have to offer.",
-//     logoUrl: "/logo.png",
-//     socials: {
-//         twitter: "x.com",
-//         discord: "discord.com",
-//         telegram: "telegram.com",
-//     },
-//     tokenomics: {
-//         ticker: "TRUMP",
-
-//         chain: "Solana",
-
-//         ca: "0x465556355sdfdfsdfsdfsdfsdfsdfsdf6435",
-
-//         buyLink: "chatgpt.com",
-//     },
-//     templateId: "0", // Default template ID
-//     templateData: {}, // Default empty JSON
-// };
-
-export default function HeroLayout({ subdomain }: { subdomain: string }) {
-    const [showCopied, setShowCopied] = useState<boolean>(false);
-
-    const [siteData, setSiteData] = useState<Site | null>(null);
-    console.log("fetching data", subdomain);
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                console.log("subdomain", subdomain);
-                const d = await fetchSiteDataAction(subdomain);
-                console.log("data", d);
-
-                setSiteData(d);
-            } catch {
-                console.log("error fetching data");
-                toast.error("Error fetching data");
-            }
-        };
-        fetchData();
-    }, [subdomain]);
-    const contractAddress = (siteData?.tokenomics as any)?.ca;
-
-    const copyAddress = (): void => {
-        navigator.clipboard.writeText(contractAddress);
-        setShowCopied(true);
-        setTimeout(() => setShowCopied(false), 2000);
-    };
-
-    const smoothScroll = (id: string) => {
-        document.getElementById(id)?.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-        });
-    };
-
-    return (
-        <div className="min-h-screen max-w-screen flex flex-col">
-            {/* Top Navigation Bar */}
-            <Nav smoothScroll={smoothScroll} siteData={siteData} />
-
-            {/* Main Content Container */}
-            <div className="flex-1 flex flex-col items-center justify-start">
-                {/* Primary Section */}
-                <div
-                    id="home"
-                    className="flex items-center justify-center pt-15 bg-gray-50    "
-                >
-                    <div className="max-w-6xl w-full flex">
-                        {/* Left Side - Image/Logo */}
-                        <div className="w-1/2 flex items-center justify-center px-8 py-15">
-                            <Image
-                                src="/logo.png"
-                                alt="BabyBaby Logo"
-                                className="h-100 w-100 object-contain animate-bounce "
-                                width={100}
-                                height={100}
-                            />
-                        </div>
-
-                        {/* Right Side - Content */}
-                        <div className="w-1/2 flex items-center px-8 my-8">
-                            <div className="max-w-md">
-                                <div className="mb-8">
-                                    <h2 className="text-5xl font-bold text-gray-800 mb-4">
-                                        Welcome to
-                                        <span className="block text-pink-600 mt-2">
-                                            {siteData?.name}
-                                        </span>
-                                    </h2>
-                                    <button
-                                        type="button"
-                                        className="text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-purple-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
-                                    >
-                                        Buy $
-                                        {(siteData?.tokenomics as any)?.ticker}
-                                    </button>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="bg-white p-4 rounded-lg shadow-sm">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-gray-500">
-                                                CA:
-                                            </span>
-                                            <button
-                                                onClick={copyAddress}
-                                                className="text-pink-600 hover:text-pink-700 flex items-center"
-                                            >
-                                                <Copy className="w-4 h-4 mr-1" />
-                                                <span className="text-sm">
-                                                    Copy
-                                                </span>
-                                            </button>
-                                        </div>
-                                        <code className="text-sm font-mono break-all text-gray-700">
-                                            {contractAddress}
-                                        </code>
-                                        {showCopied && (
-                                            <span className="text-sm text-green-600 block mt-1">
-                                                Copied!
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Additional Sections */}
-                <Section id="about" title="About" slideFrom="left">
-                    <motion.div
-                        initial={{ opacity: 0, y: 50 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                        className="max-w-6xl p-8 py-20 mx-80 px-20 bg-white rounded-xl shadow-xl   "
-                    >
-                        <div className="flex flex-col md:flex-row gap-8 items-center">
-                            {/* Text Content - Left Side */}
-                            <motion.div
-                                initial={{ opacity: 0, x: -100 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.8 }}
-                                className="md:w-4/7"
-                            >
-                                <h2 className="text-3xl md:text-4xl font-bold text-pink-600   mb-6">
-                                    <span> Introducing </span>
-                                    <p className="w-full  ">
-                                        {" "}
-                                        {siteData?.name} ($
-                                        <span className="text-black font-bold">
-                                            {" "}
-                                            {
-                                                (siteData?.tokenomics as any)
-                                                    ?.ticker
-                                            }
-                                            )
-                                        </span>
-                                    </p>
-                                </h2>
-                                <p className="text-gray-600 text-lg leading-relaxed">
-                                    {siteData?.description}
-                                </p>
-                            </motion.div>
-
-                            {/* Image/Logo - Right Side */}
-                            <motion.div
-                                initial={{ opacity: 0, x: 100 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.8 }}
-                                className="md:w-3/7 flex justify-center "
-                            >
-                                <div className="group relative w-64 h-64">
-                                    <Image
-                                        src={siteData?.logoUrl || "/logo.png"}
-                                        alt="BabyBaby Logo"
-                                        fill
-                                        className="object-contain transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110 animate-pulse"
-                                        quality={100}
-                                    />
-                                </div>
-                            </motion.div>
-                        </div>
-                    </motion.div>
-                </Section>
-
-                {/* tokenomics  */}
-                <div className="w-full">
-                    <Section
-                        id="tokenomics"
-                        title="Tokenomics"
-                        slideFrom="left"
-                    >
-                        <motion.div
-                            initial={{ opacity: 0, y: 50 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6 }}
-                            className="max-w-6xl p-8 py-20 mx-80 px-20 bg-white rounded-xl shadow-xl   "
-                        >
-                            <h2 className="text-3xl font-bold text-pink-600 mb-8 text-center">
-                                Tokenomics
-                            </h2>
-
-                            <div className="flex justify-between gap-4 mb-8">
-                                <motion.div
-                                    initial={{ x: -20 }}
-                                    animate={{ x: 0 }}
-                                    className="bg-gray-50 p-4 rounded-lg flex-1"
-                                >
-                                    <div className="text-center">
-                                        <p className="text-gray-500 text-sm mb-1">
-                                            Ticker
-                                        </p>
-                                        <p className="text-2xl font-bold text-pink-600">
-                                            $
-                                            {
-                                                (siteData?.tokenomics as any)
-                                                    ?.ticker
-                                            }
-                                        </p>
-                                    </div>
-                                </motion.div>
-
-                                <motion.div
-                                    initial={{ x: 20 }}
-                                    animate={{ x: 0 }}
-                                    className="bg-gray-50 p-4 rounded-lg flex-1"
-                                >
-                                    <Link
-                                        href={
-                                            sanitizeSocialUrl(
-                                                (siteData?.tokenomics as any)
-                                                    ?.buyLink
-                                            ) || "#"
-                                        }
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform"
-                                    >
-                                        Buy $
-                                        {(siteData?.tokenomics as any)?.ticker}
-                                    </Link>
-                                </motion.div>
-                                <motion.div
-                                    initial={{ x: 20 }}
-                                    animate={{ x: 0 }}
-                                    className="bg-gray-50 p-4 rounded-lg flex-1"
-                                >
-                                    <div className="text-center">
-                                        <p className="text-gray-500 text-sm mb-1">
-                                            Chain
-                                        </p>
-
-                                        <p className="text-2xl font-bold text-pink-600">
-                                            {
-                                                (siteData?.tokenomics as any)
-                                                    ?.chain
-                                            }
-                                        </p>
-                                    </div>
-                                </motion.div>
-                            </div>
-
-                            <motion.div
-                                initial={{ scale: 0.9 }}
-                                animate={{ scale: 1 }}
-                                className="bg-green-50 p-4 rounded-lg mb-8 flex items-center justify-center"
-                            >
-                                <CheckCircle className="text-green-500 mr-2" />
-                                <span className="font-medium">
-                                    Contract ownership is renounced
-                                </span>
-                            </motion.div>
-                            <div className="space-y-4">
-                                <div className="bg-blue-50 p-4 rounded-lg shadow-sm">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-medium text-gray-500">
-                                            CA:
-                                        </span>
-                                        <button
-                                            onClick={copyAddress}
-                                            className="text-pink-600 hover:text-pink-700 flex items-center"
-                                        >
-                                            <Copy className="w-4 h-4 mr-1" />
-                                            <span className="text-sm">
-                                                Copy
-                                            </span>
-                                        </button>
-                                    </div>
-                                    <code className="text-sm font-mono break-all text-gray-700">
-                                        {contractAddress}
-                                    </code>
-                                    {showCopied && (
-                                        <span className="text-sm text-green-600 block mt-1">
-                                            Copied!
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
-                    </Section>
-                </div>
-
-                <Section id="socials" title="Socials" slideFrom="left">
-                    <div className="w-full flex justify-center items-center ">
-                        <div className="w-[80vw]  flex justify-around gap-10">
-                            {/* Left Side - Image/Logo */}
-                            <div className="w-1/2 flex items-center justify-center px-8  ">
-                                <Image
-                                    src={siteData?.logoUrl || "/logo.png"}
-                                    alt="BabyBaby Logo"
-                                    className="h-65 w-65 object-contain animate-bounce"
-                                    width={100}
-                                    height={100}
-                                />
-                            </div>
-
-                            {/* Right Side - Content */}
-                            <div className="w-1/2 flex items-center px-8 my-8">
-                                <div className="max-w-md">
-                                    <div className="mb-8">
-                                        <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                                            Follow on Social Media
-                                        </h2>
-                                        <motion.div className="flex gap-4">
-                                            {siteData?.socials &&
-                                                typeof siteData.socials ===
-                                                    "object" && // ✅ Ensure it's an object before mapping
-                                                (
-                                                    [
-                                                        "twitter",
-                                                        "telegram",
-                                                        "discord",
-                                                    ] as Array<
-                                                        keyof (typeof siteData)["socials"]
-                                                    >
-                                                ).map(
-                                                    (icon) =>
-                                                        siteData.socials?.[
-                                                            icon
-                                                        ] && (
-                                                            <Link
-                                                                key={icon}
-                                                                href={sanitizeSocialUrl(
-                                                                    siteData
-                                                                        .socials[
-                                                                        icon
-                                                                    ] as string
-                                                                )}
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                className="cursor-pointer"
-                                                            >
-                                                                <Image
-                                                                    src={`/${icon}.png`}
-                                                                    alt={`${icon} icon`}
-                                                                    width={80}
-                                                                    height={80}
-                                                                    className="cursor-pointer"
-                                                                />
-                                                            </Link>
-                                                        )
-                                                )}
-                                        </motion.div>
-                                        {/* <motion.div className="flex gap-4">
-                                            {siteData?.socials &&
-                                                (
-                                                    [
-                                                        "twitter",
-                                                        "telegram",
-                                                        "discord",
-                                                    ] as Array<
-                                                        keyof typeof siteData.socials
-                                                    >
-                                                ).map((icon) => (
-                                                    // Usage in your component
-                                                    <Link
-                                                        key={icon}
-                                                        href={
-                                                            sanitizeSocialUrl(
-                                                                (
-                                                                    siteData?.socials as Record<
-                                                                        string,
-                                                                        string
-                                                                    >
-                                                                )[icon]
-                                                            ) || "#"
-                                                        }
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="cursor-pointer"
-                                                    >
-                                                        <Image
-                                                            src={`/${icon}.png`}
-                                                            alt={`${icon} icon`}
-                                                            width={80}
-                                                            height={80}
-                                                            className="cursor-pointer"
-                                                        />
-                                                    </Link>
-                                                ))}
-                                        </motion.div>{" "} */}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Section>
-            </div>
-
-            {/* // footer */}
-
-            <Footer siteData={siteData} />
-        </div>
-    );
-}
-
-interface NavProps {
-    smoothScroll: (id: string) => void;
-    siteData?: Site | null; // Add this
-}
-
-const Nav = ({ smoothScroll, siteData }: NavProps) => {
-    return (
-        <motion.nav
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
-            className="shadow-sm bg-white   px-8 flex items-center justify-between sticky top-0 z-50"
-        >
-            <div className="flex items-center space-x-8 py-2 w-full">
-                <motion.h1
-                    whileHover={{ scale: 1.05 }}
-                    className="text-xl font-bold text-pink-600 cursor-pointer"
-                >
-                    {(siteData?.tokenomics as any)?.ticker}
-                </motion.h1>
-
-                <div className="hidden md:flex w-full space-x-6 justify-evenly">
-                    {["home", "about", "tokenomics", "socials"].map((item) => (
-                        <motion.button
-                            key={item}
-                            whileHover={{ scale: 1.05, color: "#db2777" }}
-                            whileTap={{ scale: 0.95 }}
-                            className="text-gray-600 capitalize"
-                            onClick={() => smoothScroll(item)}
-                        >
-                            {item}
-                        </motion.button>
-                    ))}
-                </div>
-            </div>
-            <motion.div className="flex gap-4">
-                {siteData?.socials &&
-                    typeof siteData.socials === "object" && // ✅ Ensure it's an object before mapping
-                    (
-                        ["twitter", "telegram", "discord"] as Array<
-                            keyof (typeof siteData)["socials"]
-                        >
-                    ).map(
-                        (icon) =>
-                            siteData.socials?.[icon] && (
-                                <Link
-                                    key={icon}
-                                    href={sanitizeSocialUrl(
-                                        siteData.socials[icon] as string
-                                    )}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="cursor-pointer"
-                                >
-                                    <Image
-                                        src={`/${icon}.png`}
-                                        alt={`${icon} icon`}
-                                        width={40}
-                                        height={40}
-                                        className="cursor-pointer"
-                                    />
-                                </Link>
-                            )
-                    )}
-            </motion.div>
-        </motion.nav>
-    );
-};
-
-const Section: React.FC<SectionProps> = ({
-    id,
-    title,
-    slideFrom,
-    children,
-}) => {
-    const variants = {
-        hidden:
-            slideFrom === "left"
-                ? { opacity: 0, x: -100 }
-                : { opacity: 0, x: 100 },
-        visible: {
-            opacity: 1,
-            x: 0,
-            transition: { duration: 0.8 },
+    // This data would be fetched from your server
+    // Replace this with your actual data fetching logic
+    const [coinData, setCoinData] = useState({
+        name: "YourCoin",
+        ticker: "YRC",
+        description:
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.",
+        price: "$0.00042069",
+        marketCap: "$420,690",
+        chain: "Ethereum",
+        contractAddress: "0x1234...5678",
+        buyLink: "https://uniswap.org",
+        chartLink: "https://dextools.io",
+        socials: {
+            twitter: "https://twitter.com/yourcoin",
+            discord: "https://discord.gg/yourcoin",
+            telegram: "https://t.me/yourcoin",
         },
+    });
+
+    // Simulate data fetching
+    useEffect(() => {
+        // This would be your actual data fetching function
+        // const fetchData = async () => {
+        //   const response = await fetch('/api/coin-data');
+        //   const data = await response.json();
+        //   setCoinData(data);
+        // };
+        // fetchData();
+    }, []);
+
+    const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
     };
 
     return (
-        <motion.div
-            id={id}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={variants}
-            className="min-h-screen flex items-center justify-center w-full "
-        >
-            <div className="w-full">{children}</div>
-        </motion.div>
-    );
-};
+        <div className="min-h-screen flex flex-col relative overflow-hidden">
+            {/* Improved radial background - applied to the entire page */}
+            <div className="fixed inset-0 bg-green-700 z-0">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,255,0,0.15)_0%,rgba(0,100,0,0.5)_70%)]"></div>
+                <div
+                    className="absolute inset-0"
+                    style={{
+                        background:
+                            "radial-gradient(circle at center, transparent 0%, transparent 50%, rgba(0,0,0,0.1) 51%, transparent 52%, transparent 100%), radial-gradient(circle at center, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 60%)",
+                        backgroundSize: "60px 60px, 100% 100%",
+                    }}
+                ></div>
+                <div
+                    className="absolute inset-0 opacity-30"
+                    style={{
+                        backgroundImage:
+                            "linear-gradient(0deg, rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)",
+                        backgroundSize: "20px 20px",
+                    }}
+                ></div>
+            </div>
 
-const Footer = ({ siteData }: { siteData: Site | null }) => {
-    return (
-        // all right reserved
-        <div className="bg-gray-800 text-white text-center py-4">
-            <p>
-                &copy; {new Date().getFullYear()} {siteData?.name}. All rights
-                reserved.
-            </p>
+            {/* Cyber-themed Navbar */}
+            <nav className="sticky top-0 z-50 w-full backdrop-blur-md bg-black/20 border-b border-green-500/50">
+                <div className="container mx-auto px-4">
+                    <div className="flex justify-between items-center h-16">
+                        {/* Logo */}
+                        <div className="flex items-center">
+                            <div className="relative h-10 w-10 mr-2">
+                                <div className="absolute inset-0 bg-green-400 rounded-full opacity-70 animate-pulse"></div>
+                                <div className="absolute inset-1 bg-black rounded-full flex items-center justify-center text-green-400 font-bold">
+                                    {coinData.ticker.charAt(0)}
+                                </div>
+                            </div>
+                            <span
+                                className="text-xl font-bold text-white"
+                                style={{
+                                    fontFamily: "monospace",
+                                    textShadow:
+                                        "0 0 5px #00ff00, 0 0 10px #00ff00",
+                                }}
+                            >
+                                {coinData.name}
+                            </span>
+                        </div>
+
+                        {/* Desktop Navigation */}
+                        <div className="hidden md:flex items-center space-x-4">
+                            <a
+                                href="#home"
+                                className="text-green-300 hover:text-white px-3 py-2 font-mono text-sm"
+                            >
+                                HOME
+                            </a>
+                            <a
+                                href="#tokenomics"
+                                className="text-green-300 hover:text-white px-3 py-2 font-mono text-sm"
+                            >
+                                TOKENOMICS
+                            </a>
+                            <a
+                                href="#community"
+                                className="text-green-300 hover:text-white px-3 py-2 font-mono text-sm"
+                            >
+                                COMMUNITY
+                            </a>
+                            <button
+                                className="ml-4 bg-green-500 hover:bg-green-600 text-black border border-green-300 px-4 py-1 rounded font-mono text-sm"
+                                onClick={() =>
+                                    window.open(coinData.buyLink, "_blank")
+                                }
+                            >
+                                BUY NOW
+                            </button>
+                        </div>
+
+                        {/* Mobile menu button */}
+                        <div className="md:hidden">
+                            <button
+                                onClick={toggleMenu}
+                                className="text-green-300 hover:text-white focus:outline-none"
+                            >
+                                {isMenuOpen ? (
+                                    <X size={24} />
+                                ) : (
+                                    <Menu size={24} />
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile Navigation */}
+                    {isMenuOpen && (
+                        <div className="md:hidden py-2 border-t border-green-500/30">
+                            <a
+                                href="#home"
+                                className="block text-green-300 hover:text-white px-3 py-2 font-mono text-sm"
+                            >
+                                HOME
+                            </a>
+                            <a
+                                href="#tokenomics"
+                                className="block text-green-300 hover:text-white px-3 py-2 font-mono text-sm"
+                            >
+                                TOKENOMICS
+                            </a>
+                            <a
+                                href="#community"
+                                className="block text-green-300 hover:text-white px-3 py-2 font-mono text-sm"
+                            >
+                                COMMUNITY
+                            </a>
+                            <div className="px-3 py-2">
+                                <button
+                                    className="w-full bg-green-500 hover:bg-green-600 text-black border border-green-300 px-4 py-1 rounded font-mono text-sm"
+                                    onClick={() =>
+                                        window.open(coinData.buyLink, "_blank")
+                                    }
+                                >
+                                    BUY NOW
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </nav>
+
+            {/* HOME SECTION */}
+            <section
+                id="home"
+                className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-12 text-center pt-24"
+            >
+                {/* Coin mascot */}
+                <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-green-400/20 rounded-full blur-xl"></div>
+                    <Image
+                        src="/logo.png"
+                        alt="Coin Mascot"
+                        width={150}
+                        height={150}
+                        className="relative z-10"
+                    />
+                    <div className="absolute -top-2 -right-2 bg-yellow-300 rounded-full w-8 h-8 flex items-center justify-center text-black font-bold border-2 border-black z-20">
+                        $
+                    </div>
+                </div>
+
+                {/* Coin name */}
+                <h1
+                    className="text-5xl font-bold mb-4 text-white"
+                    style={{
+                        fontFamily: "monospace",
+                        letterSpacing: "0.05em",
+                        textShadow: "0 0 5px #00ff00, 0 0 10px #00ff00",
+                    }}
+                >
+                    {coinData.name}
+                </h1>
+
+                {/* Description */}
+                <p
+                    className="mb-8 text-green-100 max-w-xs mx-auto"
+                    style={{ fontFamily: "monospace" }}
+                >
+                    {coinData.description}
+                </p>
+
+                {/* Action buttons */}
+                <div className="flex gap-4">
+                    <button
+                        className="bg-green-500 hover:bg-green-600 text-black border border-green-300 px-6 py-2 rounded-md font-bold"
+                        onClick={() => window.open(coinData.buyLink, "_blank")}
+                    >
+                        Buy Now!
+                    </button>
+                    <button
+                        // variant="outline"
+                        className="bg-black/30 hover:bg-black/50 text-green-300 border border-green-500 px-6 py-2 rounded-md font-bold"
+                        onClick={() =>
+                            window.open(coinData.chartLink, "_blank")
+                        }
+                    >
+                        View Chart
+                    </button>
+                </div>
+
+                {/* Scroll indicator */}
+                <div className="absolute bottom-8 animate-bounce">
+                    <ArrowRight className="rotate-90 w-8 h-8 text-green-300" />
+                </div>
+            </section>
+
+            {/* TOKENOMICS SECTION */}
+            <section
+                id="tokenomics"
+                className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-12 pt-24"
+            >
+                <div className="bg-black/30 backdrop-blur-sm rounded-xl p-8 max-w-md w-full border border-green-500/50">
+                    <h2
+                        className="text-4xl font-bold mb-8 text-center text-white"
+                        style={{
+                            fontFamily: "monospace",
+                            letterSpacing: "0.05em",
+                            textShadow: "0 0 5px #00ff00, 0 0 10px #00ff00",
+                        }}
+                    >
+                        Tokenomics
+                    </h2>
+
+                    <div className="grid gap-4 mb-8">
+                        <div className="bg-black/40 rounded-lg p-4 border border-green-500/30">
+                            <h3 className="text-sm font-bold text-green-300/70 mb-1">
+                                Token Name
+                            </h3>
+                            <p className="text-xl font-mono font-bold text-green-100">
+                                {coinData.name}
+                            </p>
+                        </div>
+
+                        <div className="bg-black/40 rounded-lg p-4 border border-green-500/30">
+                            <h3 className="text-sm font-bold text-green-300/70 mb-1">
+                                Ticker
+                            </h3>
+                            <p className="text-xl font-mono font-bold text-green-100">
+                                {coinData.ticker}
+                            </p>
+                        </div>
+
+                        <div className="bg-black/40 rounded-lg p-4 border border-green-500/30">
+                            <h3 className="text-sm font-bold text-green-300/70 mb-1">
+                                Chain
+                            </h3>
+                            <p className="text-xl font-mono font-bold text-green-100">
+                                {coinData.chain}
+                            </p>
+                        </div>
+
+                        <div className="bg-black/40 rounded-lg p-4 border border-green-500/30">
+                            <h3 className="text-sm font-bold text-green-300/70 mb-1">
+                                Price
+                            </h3>
+                            <p className="text-xl font-mono font-bold text-green-100">
+                                {coinData.price}
+                            </p>
+                        </div>
+
+                        <div className="bg-black/40 rounded-lg p-4 border border-green-500/30">
+                            <h3 className="text-sm font-bold text-green-300/70 mb-1">
+                                Market Cap
+                            </h3>
+                            <p className="text-xl font-mono font-bold text-green-100">
+                                {coinData.marketCap}
+                            </p>
+                        </div>
+
+                        <div className="bg-black/40 rounded-lg p-4 border border-green-500/30 break-all">
+                            <h3 className="text-sm font-bold text-green-300/70 mb-1">
+                                Contract Address
+                            </h3>
+                            <p className="text-md font-mono font-bold text-green-100">
+                                {coinData.contractAddress}
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        className="w-full bg-green-500 hover:bg-green-600 text-black border border-green-300 px-6 py-6 rounded-md font-bold text-xl"
+                        onClick={() => window.open(coinData.buyLink, "_blank")}
+                    >
+                        Buy {coinData.ticker} Now!
+                    </button>
+                </div>
+
+                {/* Scroll indicator */}
+                <div className="absolute bottom-8 animate-bounce">
+                    <ArrowRight className="rotate-90 w-8 h-8 text-green-300" />
+                </div>
+            </section>
+
+            {/* SOCIAL MEDIA SECTION */}
+            <section
+                id="community"
+                className="relative z-10 flex flex-col items-center justify-center min-h-[50vh] px-4 py-12 pt-24"
+            >
+                <h2
+                    className="text-4xl font-bold mb-12 text-center text-white"
+                    style={{
+                        fontFamily: "monospace",
+                        letterSpacing: "0.05em",
+                        textShadow: "0 0 5px #00ff00, 0 0 10px #00ff00",
+                    }}
+                >
+                    Join Our Community
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl w-full">
+                    {/* Twitter */}
+                    <a
+                        href={coinData.socials.twitter}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center justify-center bg-black/30 hover:bg-black/50 text-green-300 p-8 rounded-md transition-transform hover:scale-105 border border-green-500/50"
+                    >
+                        <Twitter size={48} className="mb-4" />
+                        <span className="text-xl font-bold font-mono">
+                            Twitter
+                        </span>
+                    </a>
+
+                    {/* Discord */}
+                    <a
+                        href={coinData.socials.discord}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center justify-center bg-black/30 hover:bg-black/50 text-green-300 p-8 rounded-md transition-transform hover:scale-105 border border-green-500/50"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="48"
+                            height="48"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="mb-4"
+                        >
+                            <circle cx="9" cy="12" r="1"></circle>
+                            <circle cx="15" cy="12" r="1"></circle>
+                            <path d="M7.5 7.5c3.5-1 5.5-1 9 0"></path>
+                            <path d="M7 16.5c3.5 1 6.5 1 10 0"></path>
+                            <path d="M15.5 17c0 1 1.5 3 2 3 1.5 0 2.833-1.667 3.5-3 .667-1.667.5-5.833-1.5-11.5-1.457-1.015-3-1.34-4.5-1.5l-1 2.5"></path>
+                            <path d="M8.5 17c0 1-1.356 3-1.832 3-1.429 0-2.698-1.667-3.333-3-.635-1.667-.48-5.833 1.428-11.5C6.151 4.485 7.545 4.16 9 4l1 2.5"></path>
+                        </svg>
+                        <span className="text-xl font-bold font-mono">
+                            Discord
+                        </span>
+                    </a>
+
+                    {/* Telegram */}
+                    <a
+                        href={coinData.socials.telegram}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center justify-center bg-black/30 hover:bg-black/50 text-green-300 p-8 rounded-md transition-transform hover:scale-105 border border-green-500/50"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="48"
+                            height="48"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="mb-4"
+                        >
+                            <path d="m22 2-7 20-4-9-9-4Z"></path>
+                            <path d="M22 2 11 13"></path>
+                        </svg>
+                        <span className="text-xl font-bold font-mono">
+                            Telegram
+                        </span>
+                    </a>
+                </div>
+
+                <footer className="mt-16 text-center text-green-200/70">
+                    <p className="font-mono">
+                        © {new Date().getFullYear()} {coinData.name}. All rights
+                        reserved.
+                    </p>
+                    <p className="font-mono text-sm mt-2">
+                        Not financial advice. DYOR.
+                    </p>
+                </footer>
+            </section>
         </div>
     );
-};
+}
+
+export function CoinMascot() {
+    return (
+        <div className="relative">
+            <div className="relative w-[150px] h-[150px]">
+                <Image
+                    src="/placeholder.svg?height=150&width=150"
+                    alt="Coin Mascot"
+                    width={150}
+                    height={150}
+                    className="relative z-10"
+                />
+                <div className="absolute -top-2 -right-2 bg-yellow-300 rounded-full w-8 h-8 flex items-center justify-center text-black font-bold border-2 border-black z-20">
+                    $
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// @tailwind base;
+// @tailwind components;
+// @tailwind utilities;
+
+// @layer base {
+//   :root {
+//     --background: 0 0% 100%;
+//     --foreground: 222.2 84% 4.9%;
+//     --card: 0 0% 100%;
+//     --card-foreground: 222.2 84% 4.9%;
+//     --popover: 0 0% 100%;
+//     --popover-foreground: 222.2 84% 4.9%;
+//     --primary: 142.1 76.2% 36.3%;
+//     --primary-foreground: 355.7 100% 97.3%;
+//     --secondary: 142.1 76.2% 36.3%;
+//     --secondary-foreground: 355.7 100% 97.3%;
+//     --muted: 210 40% 96.1%;
+//     --muted-foreground: 215.4 16.3% 46.9%;
+//     --accent: 210 40% 96.1%;
+//     --accent-foreground: 222.2 47.4% 11.2%;
+//     --destructive: 0 84.2% 60.2%;
+//     --destructive-foreground: 210 40% 98%;
+//     --border: 214.3 31.8% 91.4%;
+//     --input: 214.3 31.8% 91.4%;
+//     --ring: 142.1 76.2% 36.3%;
+//     --radius: 0.5rem;
+//   }
+// }
+
+// @layer base {
+//   * {
+//     @apply border-border;
+//   }
+//   body {
+//     @apply bg-background text-foreground;
+//   }
+// }

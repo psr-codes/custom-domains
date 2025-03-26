@@ -51,6 +51,7 @@ export default function HeroLayout({ subdomain }: { subdomain: string }) {
         });
     };
 
+    if (!siteData) return <p> loading... </p>;
     return (
         <div className="min-h-screen max-w-screen w-full flex flex-col">
             {/* Top Navigation Bar */}

@@ -22,7 +22,7 @@ export const createUserAction = async (userWalletAddress: string) => {
 
         return user;
     } catch (error) {
-        console.error("Error creating user:", error);
+        console.log("Error creating user:", error);
         throw new Error("Failed to create user");
     }
 };
@@ -68,7 +68,7 @@ export const createSiteAction = async (
 
         return site;
     } catch (error) {
-        console.error("Error creating site:", error);
+        console.log("Error creating site:", error);
         throw new Error("Failed to create site");
     }
 };
@@ -94,7 +94,7 @@ export const createTransactionAction = async (
             },
         });
     } catch (error) {
-        console.error("Transaction creation failed:", error);
+        console.log("Transaction creation failed:", error);
         throw new Error("Failed to record transaction");
     }
 };
@@ -109,7 +109,26 @@ export const fetchSiteDataAction = async (subdomain: string) => {
             },
         });
     } catch (error) {
-        console.error("Error fetching site data:", error);
+        console.log("Error fetching site data:", error);
         throw new Error("Failed to fetch site data");
+    }
+};
+
+export const fetchAllSitesAction = async (userWalletAddress: string) => {
+    try {
+        const sites = await prisma.site.findMany({
+            select: {
+                // id: true,
+                subdomain: true,
+                description: true,
+                name: true,
+                logoUrl: true,
+            },
+        });
+
+        return sites;
+    } catch (error) {
+        console.log("Error fetching all sites: ", error);
+        throw new Error("failed to fetch site data");
     }
 };
