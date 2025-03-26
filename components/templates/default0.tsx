@@ -16,26 +16,9 @@ interface SectionProps {
     children?: React.ReactNode;
 }
 
-export default function HeroLayout({ subdomain }: { subdomain: string }) {
+export default function Home({ siteData }: { siteData: Site | null }) {
     const [showCopied, setShowCopied] = useState<boolean>(false);
 
-    const [siteData, setSiteData] = useState<Site | null>(null);
-    console.log("fetching data", subdomain);
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                console.log("subdomain", subdomain);
-                const d = await fetchSiteDataAction(subdomain);
-                console.log("data", d);
-
-                setSiteData(d);
-            } catch {
-                console.log("error fetching data");
-                toast.error("Error fetching data");
-            }
-        };
-        fetchData();
-    }, [subdomain]);
     const contractAddress = (siteData?.tokenomics as any)?.ca;
 
     const copyAddress = (): void => {

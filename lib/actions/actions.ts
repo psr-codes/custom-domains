@@ -58,7 +58,7 @@ export const createSiteAction = async (
                 logoUrl: formData.logo,
                 socials: formData.socials, // Store as JSON
                 tokenomics: formData.tokenomics, // Store as JSON
-                templateId: "0", // Default template ID
+                templateId: "default0", // Default template ID
                 templateData: {}, // Default empty JSON
                 owner: {
                     connect: { walletAddress: userWalletAddress },
@@ -132,3 +132,29 @@ export const fetchAllSitesAction = async (userWalletAddress: string) => {
         throw new Error("failed to fetch site data");
     }
 };
+
+// ******************* update data *********************************
+// lib/actions/actions.ts
+export async function updateSiteAction(updateData: {
+    id: string;
+    name?: string;
+    description?: string;
+    logoUrl?: string;
+    socials?: any;
+    tokenomics?: any;
+    templateId?: string;
+    templateData?: any;
+}) {
+    const { id, ...data } = updateData;
+
+    const updated = await prisma.site.update({
+        where: { id },
+        data: {
+            ...data,
+            socials: data.socials ? data.socials : undefined,
+            tokenomics: data.tokenomics ? data.tokenomics : undefined,
+        },
+    });
+
+    return updated;
+}

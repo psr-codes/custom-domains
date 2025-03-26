@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 // import A from "@/components/templates/test-templates/A";
-import B from "@/components/templates/test-templates/B";
+// import B from "@/components/templates/default1";
 
 export default async function SitePage({
     params,
@@ -21,7 +21,8 @@ export default async function SitePage({
     return (
         <div className=" ">
             {/* <B subdomain={subdomain} /> */}
-            <B />
+            {/* <B /> */}
+            hello
         </div>
     );
 }

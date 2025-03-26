@@ -4,7 +4,7 @@ import { fetchSiteDataAction } from "@/lib/actions/actions";
 import { Site } from "@prisma/client";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
-
+import EditSiteForm from "@/components/dashboard/EditSiteForm";
 export default function SitePage({
     params,
 }: {
@@ -44,14 +44,5 @@ export default function SitePage({
         return <div>Site not found</div>;
     }
 
-    return (
-        <div>
-            <h1> Edit site Details</h1>
-            <h1>{siteData?.name}</h1>
-            <img
-                src={siteData?.logoUrl || "/logo.png"}
-                alt={`${siteData?.name} logo`}
-            />
-        </div>
-    );
+    return <div>{siteData && <EditSiteForm site={siteData} />}</div>;
 }

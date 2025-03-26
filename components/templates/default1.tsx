@@ -1,47 +1,35 @@
 "use client";
+import { Copy, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
+import Link from "next/link";
+import { sanitizeSocialUrl } from "@/lib/utils";
+import { fetchSiteDataAction } from "@/lib/actions/actions";
+import { Site } from "@prisma/client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-// import { button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { ArrowRight, Twitter, Menu, X } from "lucide-react";
 
-export default function Home() {
+export default function Home({ siteData }: { siteData: Site | null }) {
+    const [showCopied, setShowCopied] = useState<boolean>(false);
+
+    const contractAddress = (siteData?.tokenomics as any)?.ca;
+
+    const copyAddress = (): void => {
+        navigator.clipboard.writeText(contractAddress);
+        setShowCopied(true);
+
+        setTimeout(() => setShowCopied(false), 2000);
+    };
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    // This data would be fetched from your server
-    // Replace this with your actual data fetching logic
-    const [coinData, setCoinData] = useState({
-        name: "YourCoin",
-        ticker: "YRC",
-        description:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.",
-        price: "$0.00042069",
-        marketCap: "$420,690",
-        chain: "Ethereum",
-        contractAddress: "0x1234...5678",
-        buyLink: "https://uniswap.org",
-        chartLink: "https://dextools.io",
-        socials: {
-            twitter: "https://twitter.com/yourcoin",
-            discord: "https://discord.gg/yourcoin",
-            telegram: "https://t.me/yourcoin",
-        },
-    });
-
-    // Simulate data fetching
-    useEffect(() => {
-        // This would be your actual data fetching function
-        // const fetchData = async () => {
-        //   const response = await fetch('/api/coin-data');
-        //   const data = await response.json();
-        //   setCoinData(data);
-        // };
-        // fetchData();
-    }, []);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
+
+    if (!siteData) return <p> loading... </p>;
 
     return (
         <div className="min-h-screen flex flex-col relative overflow-hidden">
@@ -75,7 +63,13 @@ export default function Home() {
                             <div className="relative h-10 w-10 mr-2">
                                 <div className="absolute inset-0 bg-green-400 rounded-full opacity-70 animate-pulse"></div>
                                 <div className="absolute inset-1 bg-black rounded-full flex items-center justify-center text-green-400 font-bold">
-                                    {coinData.ticker.charAt(0)}
+                                    {/* {siteData.ticker.charAt(0)} */}
+                                    <Image
+                                        src={siteData?.logoUrl}
+                                        width={40}
+                                        height={40}
+                                        alt={siteData?.subdomain}
+                                    ></Image>
                                 </div>
                             </div>
                             <span
@@ -86,7 +80,7 @@ export default function Home() {
                                         "0 0 5px #00ff00, 0 0 10px #00ff00",
                                 }}
                             >
-                                {coinData.name}
+                                {siteData.name}
                             </span>
                         </div>
 
@@ -111,9 +105,15 @@ export default function Home() {
                                 COMMUNITY
                             </a>
                             <button
-                                className="ml-4 bg-green-500 hover:bg-green-600 text-black border border-green-300 px-4 py-1 rounded font-mono text-sm"
+                                className="ml-4 cursor-pointer bg-green-500 hover:bg-green-600 text-black border border-green-300 px-4 py-1 rounded font-mono text-sm"
                                 onClick={() =>
-                                    window.open(coinData.buyLink, "_blank")
+                                    window.open(
+                                        sanitizeSocialUrl(
+                                            (siteData?.tokenomics as any)
+                                                ?.buyLink
+                                        ) || "#",
+                                        "_blank"
+                                    )
                                 }
                             >
                                 BUY NOW
@@ -158,9 +158,15 @@ export default function Home() {
                             </a>
                             <div className="px-3 py-2">
                                 <button
-                                    className="w-full bg-green-500 hover:bg-green-600 text-black border border-green-300 px-4 py-1 rounded font-mono text-sm"
+                                    className="w-full cursor-pointer bg-green-500 hover:bg-green-600 text-black border border-green-300 px-4 py-1 rounded font-mono text-sm"
                                     onClick={() =>
-                                        window.open(coinData.buyLink, "_blank")
+                                        window.open(
+                                            sanitizeSocialUrl(
+                                                (siteData?.tokenomics as any)
+                                                    ?.buyLink
+                                            ) || "#",
+                                            "_blank"
+                                        )
                                     }
                                 >
                                     BUY NOW
@@ -174,16 +180,16 @@ export default function Home() {
             {/* HOME SECTION */}
             <section
                 id="home"
-                className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-12 text-center pt-24"
+                className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pb-12 text-center "
             >
                 {/* Coin mascot */}
                 <div className="relative mb-6">
                     <div className="absolute inset-0 bg-green-400/20 rounded-full blur-xl"></div>
                     <Image
-                        src="/logo.png"
-                        alt="Coin Mascot"
-                        width={150}
-                        height={150}
+                        src={siteData?.logoUrl}
+                        alt={siteData?.name}
+                        width={200}
+                        height={200}
                         className="relative z-10"
                     />
                     <div className="absolute -top-2 -right-2 bg-yellow-300 rounded-full w-8 h-8 flex items-center justify-center text-black font-bold border-2 border-black z-20">
@@ -200,7 +206,7 @@ export default function Home() {
                         textShadow: "0 0 5px #00ff00, 0 0 10px #00ff00",
                     }}
                 >
-                    {coinData.name}
+                    {siteData?.name}
                 </h1>
 
                 {/* Description */}
@@ -208,26 +214,47 @@ export default function Home() {
                     className="mb-8 text-green-100 max-w-xs mx-auto"
                     style={{ fontFamily: "monospace" }}
                 >
-                    {coinData.description}
+                    {siteData.description}
                 </p>
 
                 {/* Action buttons */}
                 <div className="flex gap-4">
                     <button
-                        className="bg-green-500 hover:bg-green-600 text-black border border-green-300 px-6 py-2 rounded-md font-bold"
-                        onClick={() => window.open(coinData.buyLink, "_blank")}
+                        className="bg-green-500 cursor-pointer hover:bg-green-600 text-black border border-green-300 px-6 py-2 rounded-md font-bold"
+                        onClick={() =>
+                            window.open(
+                                sanitizeSocialUrl(
+                                    (siteData?.tokenomics as any)?.buyLink
+                                ) || "#",
+                                "_blank"
+                            )
+                        }
                     >
                         Buy Now!
                     </button>
-                    <button
-                        // variant="outline"
-                        className="bg-black/30 hover:bg-black/50 text-green-300 border border-green-500 px-6 py-2 rounded-md font-bold"
-                        onClick={() =>
-                            window.open(coinData.chartLink, "_blank")
-                        }
-                    >
-                        View Chart
-                    </button>
+                    <div className="flex-col relative">
+                        <div
+                            // variant="outline"
+                            className="bg-black/30 flex gap-5 justify-between items-center hover:bg-black/50 text-green-300 border border-green-500 px-2 py-2 rounded-md font-bold"
+                        >
+                            <span>CA</span>
+                            <button
+                                onClick={copyAddress}
+                                className="text-pink-600   cursor-pointer hover:text-pink-700 flex items-center"
+                            >
+                                <Copy className="w-4 h-4 mr-1" />
+                                <span className="text-sm">Copy</span>
+                            </button>{" "}
+                        </div>{" "}
+                        <p className="absolute">
+                            {" "}
+                            {showCopied && (
+                                <span className="text-sm text-stone-50 block mt-1">
+                                    Copied!
+                                </span>
+                            )}
+                        </p>
+                    </div>{" "}
                 </div>
 
                 {/* Scroll indicator */}
@@ -259,7 +286,7 @@ export default function Home() {
                                 Token Name
                             </h3>
                             <p className="text-xl font-mono font-bold text-green-100">
-                                {coinData.name}
+                                {siteData.name}
                             </p>
                         </div>
 
@@ -268,7 +295,7 @@ export default function Home() {
                                 Ticker
                             </h3>
                             <p className="text-xl font-mono font-bold text-green-100">
-                                {coinData.ticker}
+                                {(siteData?.tokenomics as any)?.ticker}
                             </p>
                         </div>
 
@@ -277,43 +304,49 @@ export default function Home() {
                                 Chain
                             </h3>
                             <p className="text-xl font-mono font-bold text-green-100">
-                                {coinData.chain}
+                                {(siteData?.tokenomics as any)?.chain}
                             </p>
                         </div>
 
-                        <div className="bg-black/40 rounded-lg p-4 border border-green-500/30">
-                            <h3 className="text-sm font-bold text-green-300/70 mb-1">
-                                Price
-                            </h3>
-                            <p className="text-xl font-mono font-bold text-green-100">
-                                {coinData.price}
-                            </p>
-                        </div>
-
-                        <div className="bg-black/40 rounded-lg p-4 border border-green-500/30">
-                            <h3 className="text-sm font-bold text-green-300/70 mb-1">
-                                Market Cap
-                            </h3>
-                            <p className="text-xl font-mono font-bold text-green-100">
-                                {coinData.marketCap}
-                            </p>
-                        </div>
-
-                        <div className="bg-black/40 rounded-lg p-4 border border-green-500/30 break-all">
-                            <h3 className="text-sm font-bold text-green-300/70 mb-1">
-                                Contract Address
-                            </h3>
-                            <p className="text-md font-mono font-bold text-green-100">
-                                {coinData.contractAddress}
-                            </p>
+                        <div className="bg-black/40 rounded-lg p-4 border border-green-500/30 break-all relative">
+                            <div className="flex justify-between items-start">
+                                <h3 className="text-sm font-bold text-green-300/70 mb-1">
+                                    Contract Address
+                                </h3>{" "}
+                                <button
+                                    onClick={copyAddress}
+                                    className="text-pink-600   cursor-pointer hover:text-pink-700 flex items-center"
+                                >
+                                    <Copy className="w-4 h-4 mr-1" />
+                                    <span className="text-sm">Copy</span>
+                                </button>{" "}
+                            </div>
+                            <span className="text-sm   font-mono font-bold text-green-100">
+                                {(siteData?.tokenomics as any)?.ca}
+                            </span>{" "}
+                            <span className="absolute right-2 bottom-2 text-pink-500">
+                                {" "}
+                                {showCopied && (
+                                    <span className="text-sm text-stone-50 block mt-1">
+                                        Copied!
+                                    </span>
+                                )}
+                            </span>
                         </div>
                     </div>
 
                     <button
-                        className="w-full bg-green-500 hover:bg-green-600 text-black border border-green-300 px-6 py-6 rounded-md font-bold text-xl"
-                        onClick={() => window.open(coinData.buyLink, "_blank")}
+                        className="w-full bg-green-500 cursor-pointer hover:bg-green-600 text-black border border-green-300 px-6 py-6 rounded-md font-bold text-xl"
+                        onClick={() =>
+                            window.open(
+                                sanitizeSocialUrl(
+                                    (siteData?.tokenomics as any)?.buyLink
+                                ) || "#",
+                                "_blank"
+                            )
+                        }
                     >
-                        Buy {coinData.ticker} Now!
+                        Buy {(siteData?.tokenomics as any)?.ticker} Now!
                     </button>
                 </div>
 
@@ -341,8 +374,10 @@ export default function Home() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl w-full">
                     {/* Twitter */}
-                    <a
-                        href={coinData.socials.twitter}
+                    <Link
+                        href={sanitizeSocialUrl(
+                            (siteData?.socials as any).twitter
+                        )}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex flex-col items-center justify-center bg-black/30 hover:bg-black/50 text-green-300 p-8 rounded-md transition-transform hover:scale-105 border border-green-500/50"
@@ -351,11 +386,13 @@ export default function Home() {
                         <span className="text-xl font-bold font-mono">
                             Twitter
                         </span>
-                    </a>
+                    </Link>
 
                     {/* Discord */}
-                    <a
-                        href={coinData.socials.discord}
+                    <Link
+                        href={sanitizeSocialUrl(
+                            (siteData?.socials as any).discord
+                        )}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex flex-col items-center justify-center bg-black/30 hover:bg-black/50 text-green-300 p-8 rounded-md transition-transform hover:scale-105 border border-green-500/50"
@@ -382,11 +419,13 @@ export default function Home() {
                         <span className="text-xl font-bold font-mono">
                             Discord
                         </span>
-                    </a>
+                    </Link>
 
                     {/* Telegram */}
-                    <a
-                        href={coinData.socials.telegram}
+                    <Link
+                        href={sanitizeSocialUrl(
+                            (siteData?.socials as any).telegram
+                        )}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex flex-col items-center justify-center bg-black/30 hover:bg-black/50 text-green-300 p-8 rounded-md transition-transform hover:scale-105 border border-green-500/50"
@@ -409,12 +448,12 @@ export default function Home() {
                         <span className="text-xl font-bold font-mono">
                             Telegram
                         </span>
-                    </a>
+                    </Link>
                 </div>
 
                 <footer className="mt-16 text-center text-green-200/70">
                     <p className="font-mono">
-                        © {new Date().getFullYear()} {coinData.name}. All rights
+                        © {new Date().getFullYear()} {siteData.name}. All rights
                         reserved.
                     </p>
                     <p className="font-mono text-sm mt-2">
@@ -444,41 +483,3 @@ export function CoinMascot() {
         </div>
     );
 }
-
-// @tailwind base;
-// @tailwind components;
-// @tailwind utilities;
-
-// @layer base {
-//   :root {
-//     --background: 0 0% 100%;
-//     --foreground: 222.2 84% 4.9%;
-//     --card: 0 0% 100%;
-//     --card-foreground: 222.2 84% 4.9%;
-//     --popover: 0 0% 100%;
-//     --popover-foreground: 222.2 84% 4.9%;
-//     --primary: 142.1 76.2% 36.3%;
-//     --primary-foreground: 355.7 100% 97.3%;
-//     --secondary: 142.1 76.2% 36.3%;
-//     --secondary-foreground: 355.7 100% 97.3%;
-//     --muted: 210 40% 96.1%;
-//     --muted-foreground: 215.4 16.3% 46.9%;
-//     --accent: 210 40% 96.1%;
-//     --accent-foreground: 222.2 47.4% 11.2%;
-//     --destructive: 0 84.2% 60.2%;
-//     --destructive-foreground: 210 40% 98%;
-//     --border: 214.3 31.8% 91.4%;
-//     --input: 214.3 31.8% 91.4%;
-//     --ring: 142.1 76.2% 36.3%;
-//     --radius: 0.5rem;
-//   }
-// }
-
-// @layer base {
-//   * {
-//     @apply border-border;
-//   }
-//   body {
-//     @apply bg-background text-foreground;
-//   }
-// }

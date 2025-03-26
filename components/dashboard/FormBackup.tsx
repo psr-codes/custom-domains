@@ -15,6 +15,8 @@ import {
     createTransactionAction,
 } from "@/lib/actions/actions";
 
+import { handleValidateForm } from "@/lib/handlers";
+
 import { processPayment } from "@/lib/handlers";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
@@ -80,8 +82,8 @@ export default function Form() {
                 toast.error("Please connect your wallet first");
                 return;
             }
-            if (!formData.logo) {
-                toast.error("Please upload a logo first");
+            if (!handleValidateForm(formData, publicKey)) {
+                setIsSubmitting(false);
                 return;
             }
 
@@ -143,7 +145,7 @@ export default function Form() {
                 {/* Steps Indicator */}
                 <div className="flex justify-center">
                     <div className="flex space-x-8">
-                        {[1, 2, 3].map((step) => (
+                        {[1, 2, 3, 4].map((step) => (
                             <div
                                 key={step}
                                 className="flex flex-col items-center"
@@ -183,7 +185,6 @@ export default function Form() {
                     className="w-full rounded-md md:border md:border-stone-200 md:shadow dark:bg-black dark:md:border-stone-700"
                 >
                     {/* Step 1 - Site Details */}
-
                     {currentStep === 1 && (
                         <div className="relative flex flex-col px-5 py-3 md:px-10">
                             <div className="flex-1 space-y-4 px-5 md:px-10">
@@ -267,7 +268,7 @@ export default function Form() {
                                     </div>
                                 </div>
                                 {/* 
-                                add description field */}
+                          add description field */}
 
                                 <div>
                                     <label
@@ -295,7 +296,7 @@ export default function Form() {
                         </div>
                     )}
 
-                    {/* Step 2 - token info */}
+                    {/* Step 2 - Token Info */}
                     {currentStep === 2 && (
                         <div className="relative flex flex-col px-5 py-3 md:px-10">
                             <div className="flex-1 space-y-4 px-5 md:px-10">
@@ -314,7 +315,7 @@ export default function Form() {
                                             <input
                                                 type={token.fieldType}
                                                 placeholder={token.placeholder}
-                                                required={token.id != "supply"}
+                                                required={token.id != "buyLink"}
                                                 className="w-full rounded-md border border-stone-200 bg-stone-50 px-4 py-2 text-sm dark:border-stone-600 dark:bg-black dark:text-white"
                                                 onChange={(e) =>
                                                     setFormData({
@@ -334,7 +335,7 @@ export default function Form() {
                         </div>
                     )}
 
-                    {/* Step 3 - Social Information */}
+                    {/* Step 3 - Social Links */}
                     {currentStep === 3 && (
                         <div className="relative flex flex-col px-5 py-3 md:px-10">
                             <div className="flex-1 space-y-4 px-5 md:px-10">
@@ -375,10 +376,7 @@ export default function Form() {
                         </div>
                     )}
 
-                    {
-                        // checkout
-                    }
-
+                    {/* Step 4 - Checkout */}
                     {currentStep === 4 && (
                         <div className="relative flex flex-col px-5 py-3 md:px-10">
                             <div className="flex-1 space-y-6 px-5 md:px-10 text-center">
@@ -440,7 +438,6 @@ export default function Form() {
                             </div>
                         </div>
                     )}
-
                     {/* Navigation Controls */}
                     <div className="flex items-center justify-between rounded-b-lg border-t border-stone-200 bg-stone-50 p-3 md:px-10 dark:border-stone-700 dark:bg-stone-800">
                         <div>
@@ -461,10 +458,9 @@ export default function Form() {
                             {currentStep < 4 ? (
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        // Add validation logic here
-                                        setCurrentStep(currentStep + 1);
-                                    }}
+                                    onClick={() =>
+                                        setCurrentStep(currentStep + 1)
+                                    }
                                     className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 dark:bg-white dark:text-black dark:hover:bg-stone-200"
                                 >
                                     Next

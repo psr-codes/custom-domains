@@ -107,4 +107,5 @@ const LogoComp = ({ image, setImage }: LogoCompProps) => {
         </div>
     );
 };
+
 export default LogoComp;
