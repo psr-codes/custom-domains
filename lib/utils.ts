@@ -1,5 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+
+import { templatesData } from "@/lib/data/index";
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
@@ -83,4 +85,37 @@ export function getSubdomain(host?: string | null) {
 
     console.log("No subdomain detected");
     return null;
+}
+
+export function isThemeFree(templateId: string) {
+    const template = templatesData.find((t) => t.name === templateId);
+    return template ? template.price === 0 : false;
+}
+
+export function getTemplatePrice(templateId: string): number {
+    const template = templatesData.find((t) => t.id === templateId);
+
+    if (!template) {
+        console.error(`Template with ID ${templateId} not found`);
+        return 0; // Return 0 or throw an error if preferred
+    }
+
+    return template.price;
+}
+
+export function getTotalSiteCreationFee(selectedTemplateId: string | null) {
+    let templatePrice = 0;
+    if (selectedTemplateId) {
+        templatePrice = getTemplatePrice(selectedTemplateId);
+    }
+
+    // Convert environment variable to number safely
+    const creationFee =
+        parseFloat(
+            process.env.NEXT_PUBLIC_RECIPEINT_SITE_CREATION_FEE || "0"
+        ) || 0; // Fallback to 0 if conversion fails
+
+    const totalPrice = templatePrice + creationFee;
+
+    return totalPrice;
 }

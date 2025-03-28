@@ -3,7 +3,7 @@ import React from "react";
 import Form from "@/components/dashboard/Form";
 const page = () => {
     return (
-        <div>
+        <div className="bg-black">
             <Form />
         </div>
     );

@@ -1,4 +1,5 @@
 "use client";
+
 import { socialsData, tokenomicsData } from "@/lib/data";
 import { uploadImage } from "@/lib/actions/storage";
 import { useEffect, useState } from "react";
@@ -6,8 +7,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import LoadingDots from "@/components/icons/loading-dots";
+
+import TemplatesComp from "@/components/dashboard/TemplatesComp";
 import CreateSiteButton from "@/components/others/create-site-button";
 import CreateSiteModal from "@/components/modal/create-site";
+
+import { useTemplateStore } from "@/lib/stores/create-form-store";
+
 // import va from "@vercel/analytics"; // or any other analytics
 import LogoComp from "@/components/dashboard/LogoComp";
 import {
@@ -20,7 +26,7 @@ import { handleValidateForm } from "@/lib/handlers";
 
 import { processPayment } from "@/lib/handlers";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-
+import { getTotalSiteCreationFee, getTemplatePrice } from "@/lib/utils";
 export default function Form() {
     const router = useRouter();
 
@@ -33,6 +39,8 @@ export default function Form() {
     // logo file
     const [image, setImage] = useState<string | null>(null);
 
+    const { selectedTemplateId, setSelectedTemplateId } = useTemplateStore();
+
     const [formData, setFormData] = useState({
         name: "",
         subdomain: "",
@@ -43,6 +51,7 @@ export default function Form() {
             discord: "",
             telegram: "",
         },
+        templateId: "",
         tokenomics: {
             ticker: "",
 
@@ -55,6 +64,7 @@ export default function Form() {
     });
 
     // Automatically sync subdomain with name
+    // Instead of multiple useEffect calls, combine where possible
     useEffect(() => {
         setFormData((prev) => ({
             ...prev,
@@ -62,18 +72,10 @@ export default function Form() {
                 .toLowerCase()
                 .trim()
                 .replace(/[\W_]+/g, "-"),
+            logo: image || "",
+            templateId: selectedTemplateId || "",
         }));
-    }, [formData.name]);
-
-    useEffect(() => {
-        setFormData((prev) => {
-            return {
-                ...prev,
-                logo: image || "",
-            };
-        });
-    }, [image]);
-
+    }, [formData.name, image, selectedTemplateId]); // Single effect for related state
     const handleSubmitForm = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -89,8 +91,13 @@ export default function Form() {
             }
 
             console.log("form data:", formData);
+            // get the price of template
+
+            const totalFee = getTotalSiteCreationFee(selectedTemplateId);
+
             // Step 2: Process SOL payment
             const signature = await processPayment(
+                totalFee,
                 publicKey,
                 connection,
                 sendTransaction
@@ -132,21 +139,12 @@ export default function Form() {
     };
     const [currentStep, setCurrentStep] = useState(1);
     return (
-        <div className="flex max-w-screen-xl flex-col space-y-12 p-8">
+        <div className="flex max-w-screen-xl bg-black flex-col space-y-12 px-8 pb-8 pt-2">
             <div className="flex flex-col space-y-6">
-                <div className="flex items-center justify-between">
-                    <h1 className="font-cal text-3xl font-bold dark:text-white">
-                        Create New Site
-                    </h1>
-                    <CreateSiteButton>
-                        <CreateSiteModal />
-                    </CreateSiteButton>
-                </div>
-
                 {/* Steps Indicator */}
-                <div className="flex justify-center">
+                <div className="flex justify-center p-1 ">
                     <div className="flex space-x-8">
-                        {[1, 2, 3, 4].map((step) => (
+                        {[1, 2, 3, 4, 5].map((step) => (
                             <div
                                 key={step}
                                 className="flex flex-col items-center"
@@ -161,7 +159,7 @@ export default function Form() {
                                     {step}
                                 </div>
                                 <div
-                                    className={`mt-2 text-sm ${
+                                    className={`mt-1 text-sm ${
                                         currentStep === step
                                             ? "font-medium"
                                             : "text-stone-500"
@@ -172,6 +170,7 @@ export default function Form() {
                                             "Site Details",
                                             "Token Info",
                                             "Social Links",
+                                            "Templates",
                                             "Checkout",
                                         ][step - 1]
                                     }
@@ -183,8 +182,42 @@ export default function Form() {
 
                 <form
                     onSubmit={handleSubmitForm}
-                    className="w-full rounded-md md:border md:border-stone-200 md:shadow dark:bg-black dark:md:border-stone-700"
+                    className="relative w-full rounded-md md:border min-h-[86vh] md:border-stone-200 md:shadow dark:bg-black dark:md:border-stone-700"
                 >
+                    {" "}
+                    <div className="flex items-center justify-between rounded-b-lg border-t border-stone-200 bg-stone-50 p-3 md:px-10 dark:border-stone-700 dark:bg-stone-800">
+                        <div>
+                            {currentStep > 1 && (
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setCurrentStep(currentStep - 1)
+                                    }
+                                    className="cursor-pointer rounded-md px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-700"
+                                >
+                                    Previous
+                                </button>
+                            )}
+                        </div>
+
+                        <div>
+                            {currentStep < 5 ? (
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setCurrentStep(currentStep + 1)
+                                    }
+                                    className="cursor-pointer rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 dark:bg-white dark:text-black dark:hover:bg-stone-200"
+                                >
+                                    Next
+                                </button>
+                            ) : (
+                                <CreateSiteFormButton
+                                    isSubmitting={isSubmitting}
+                                />
+                            )}
+                        </div>
+                    </div>
                     {/* Step 1 - Site Details */}
                     {currentStep === 1 && (
                         <div className="relative flex flex-col px-5 py-3 md:px-10">
@@ -296,7 +329,6 @@ export default function Form() {
                             </div>
                         </div>
                     )}
-
                     {/* Step 2 - Token Info */}
                     {currentStep === 2 && (
                         <div className="relative flex flex-col px-5 py-3 md:px-10">
@@ -335,7 +367,6 @@ export default function Form() {
                             </div>
                         </div>
                     )}
-
                     {/* Step 3 - Social Links */}
                     {currentStep === 3 && (
                         <div className="relative flex flex-col px-5 py-3 md:px-10">
@@ -376,9 +407,15 @@ export default function Form() {
                             </div>
                         </div>
                     )}
-
-                    {/* Step 4 - Checkout */}
+                    {/* Step 4 - Choose Template */}
                     {currentStep === 4 && (
+                        <div className="relative  max-h-screen overflow-scroll flex flex-col px-5  md:px-10">
+                            <TemplatesComp subdomain="Your Site" />
+                        </div>
+                    )}
+                    {/* Step 5 - Checkout */}
+                    {/* Step 5 - Checkout */}
+                    {currentStep === 5 && (
                         <div className="relative flex flex-col px-5 py-3 md:px-10">
                             <div className="flex-1 space-y-6 px-5 md:px-10 text-center">
                                 <div className="animate-bounce text-6xl">
@@ -390,29 +427,84 @@ export default function Form() {
                                 </h2>
 
                                 <div className="space-y-4 text-stone-600 dark:text-stone-300">
-                                    <p className="text-lg">
-                                        Just 0.1 SOL to make it official.
-                                        <span className="block text-sm">
-                                            (That's less than most transaction
-                                            fees these days)
-                                        </span>
-                                    </p>
+                                    {/* Price Breakdown */}
+                                    <div className="p-4 bg-stone-100 dark:bg-stone-800 rounded-lg space-y-2">
+                                        <div className="space-y-1">
+                                            {/* Base Fee */}
+                                            <div className="flex justify-between">
+                                                <span>Site Creation Fee:</span>
+                                                <span className="font-mono">
+                                                    {Number(
+                                                        process.env
+                                                            .NEXT_PUBLIC_RECIPEINT_SITE_CREATION_FEE ||
+                                                            0.1
+                                                    ).toFixed(2)}{" "}
+                                                    ◎ SOL
+                                                </span>
+                                            </div>
 
-                                    <div className="p-4 bg-stone-100 dark:bg-stone-800 rounded-lg">
-                                        <p className="font-mono text-xl">
-                                            0.1 ◎ SOL
-                                        </p>
-                                        <button className="mt-2 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-full">
-                                            Take My SOL Already!
+                                            {/* Template Line - Always shown */}
+                                            <div className="flex justify-between">
+                                                <span>
+                                                    {selectedTemplateId
+                                                        ? `Selected Template: ${selectedTemplateId}`
+                                                        : "Basic Template:"}
+                                                </span>
+                                                <span className="font-mono">
+                                                    {selectedTemplateId
+                                                        ? `+${getTemplatePrice(
+                                                              selectedTemplateId
+                                                          ).toFixed(2)} ◎ SOL`
+                                                        : "Basic Chad (Free)"}
+                                                </span>
+                                            </div>
+
+                                            {/* Total Price */}
+                                            <div className="flex justify-between pt-2 border-t border-stone-200 dark:border-stone-700">
+                                                <span className="font-medium">
+                                                    Total:
+                                                </span>
+                                                <span className="font-mono text-lg font-bold">
+                                                    {getTotalSiteCreationFee(
+                                                        selectedTemplateId
+                                                    ).toFixed(2)}{" "}
+                                                    ◎ SOL
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            disabled={isSubmitting}
+                                            className="cursor-pointer mt-4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-full"
+                                        >
+                                            {getTotalSiteCreationFee(
+                                                selectedTemplateId
+                                            ) > 0.1
+                                                ? `Pay ${getTotalSiteCreationFee(
+                                                      selectedTemplateId
+                                                  ).toFixed(2)} SOL`
+                                                : "Take My SOL Already!"}
                                         </button>
                                     </div>
 
+                                    {/* Updated informational text */}
                                     <p className="text-sm">
-                                        P.S. Your site comes pre-loaded with our
-                                        "Basic Chad" template.
-                                        <span className="block mt-2">
-                                            Don't panic! You can:
-                                        </span>
+                                        {selectedTemplateId ? (
+                                            <>
+                                                You've selected the{" "}
+                                                <strong>
+                                                    {selectedTemplateId}
+                                                </strong>{" "}
+                                                template
+                                                <span className="block mt-2">
+                                                    Remember you can always:
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <span className="block mt-2">
+                                                You can always:
+                                            </span>
+                                        )}
                                     </p>
 
                                     <ul className="list-disc list-inside text-left space-y-2 max-w-md mx-auto">
@@ -431,16 +523,17 @@ export default function Form() {
 
                                     <p className="text-xs pt-4">
                                         "But wait, I want to be fancy later!" -
-                                        No worries mate, all upgrades are free.
-                                        We're not your ex, we don't do hidden
-                                        fees.
+                                        No worries mate,
+                                        <br />
+                                        all upgrades are free. We're not your
+                                        ex, we don't do hidden fees.
                                     </p>
                                 </div>
                             </div>
                         </div>
                     )}
                     {/* Navigation Controls */}
-                    <div className="flex items-center justify-between rounded-b-lg border-t border-stone-200 bg-stone-50 p-3 md:px-10 dark:border-stone-700 dark:bg-stone-800">
+                    <div className="absolute bottom-0 w-full flex items-center justify-between rounded-b-lg border-t border-stone-200 bg-stone-50 p-3 md:px-10 dark:border-stone-700 dark:bg-stone-800">
                         <div>
                             {currentStep > 1 && (
                                 <button
@@ -448,7 +541,7 @@ export default function Form() {
                                     onClick={() =>
                                         setCurrentStep(currentStep - 1)
                                     }
-                                    className="rounded-md px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-700"
+                                    className="cursor-pointer rounded-md px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-700"
                                 >
                                     Previous
                                 </button>
@@ -456,13 +549,13 @@ export default function Form() {
                         </div>
 
                         <div>
-                            {currentStep < 4 ? (
+                            {currentStep < 5 ? (
                                 <button
                                     type="button"
                                     onClick={() =>
                                         setCurrentStep(currentStep + 1)
                                     }
-                                    className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 dark:bg-white dark:text-black dark:hover:bg-stone-200"
+                                    className="cursor-pointer rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 dark:bg-white dark:text-black dark:hover:bg-stone-200"
                                 >
                                     Next
                                 </button>
@@ -484,7 +577,7 @@ function CreateSiteFormButton({ isSubmitting }: { isSubmitting: boolean }) {
     return (
         <button
             className={cn(
-                "flex h-10 w-full items-center justify-center space-x-2 rounded-md border text-sm transition-all focus:outline-none",
+                "cursor-pointer flex h-10 w-full items-center justify-center space-x-2 rounded-md border text-sm transition-all focus:outline-none",
                 isSubmitting
                     ? "min-w-[40px] cursor-not-allowed border-stone-200 bg-stone-100 text-stone-400 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
                     : "border-black bg-black text-white hover:bg-white hover:text-black dark:border-stone-700 dark:hover:border-stone-200 dark:hover:bg-black dark:hover:text-white dark:active:bg-stone-800"

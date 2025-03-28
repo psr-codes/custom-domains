@@ -8,12 +8,21 @@ import {
 } from "@solana/web3.js";
 
 export const processPayment = async (
+    totalFee: number,
     publicKey: PublicKey,
     connection: Connection,
     sendTransaction: any
 ) => {
     try {
         toast.info("Processing payment...");
+
+        // Convert SOL to lamports safely
+        const lamports = Math.round(totalFee * 1e9); // Round to nearest integer
+
+        // Validate lamports value
+        if (!Number.isInteger(lamports) || lamports <= 0) {
+            throw new Error("Invalid payment amount");
+        }
 
         // 1. Create transaction
         const transaction = new Transaction().add(
@@ -22,11 +31,15 @@ export const processPayment = async (
                 toPubkey: new PublicKey(
                     process.env.NEXT_PUBLIC_RECIPEINT_SOLANA_ADDRESS as string
                 ),
-                lamports: 0.1 * 1e9, // 0.1 SOL in lamports (1 SOL = 1e9 lamports)
+                lamports: lamports,
             })
         );
 
-        toast.info("Please approve the payment of 0.1 SOL in your wallet...");
+        toast.info(
+            `Please approve the payment of ${totalFee.toFixed(
+                3
+            )} SOL in your wallet...`
+        );
 
         // 2. Send transaction
         const signature = await sendTransaction(transaction, connection);

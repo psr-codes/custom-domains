@@ -11,7 +11,10 @@ export default function ClientTemplate({
     siteData: Site | null;
 }) {
     const DynamicTemplate = dynamic<{ siteData: Site | null }>(
-        () => import(`@/components/templates/${siteData?.templateId}`),
+        () =>
+            import(
+                `@/components/templates/${siteData?.templateId}/${siteData?.templateId}`
+            ),
         {
             loading: () => <LoadingSkeleton />,
             ssr: false,

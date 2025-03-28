@@ -1,14 +1,9 @@
 import React from "react";
-import HomeNavbar from "@/components/home/HomeNavbar";
-
+import LandingPage from "@/components/home/LandingPage";
 const page = () => {
     return (
-        <section>
-            <HomeNavbar />
-
-            <div>
-                <h1>Home Page</h1>
-            </div>
+        <section className="flex flex-col">
+            <LandingPage />
         </section>
     );
 };

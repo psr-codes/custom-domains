@@ -1,10 +1,13 @@
 "use client";
 
+import { useWallet } from "@solana/wallet-adapter-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+
+import { updateSiteAction } from "@/lib/actions/actions";
 import Link from "next/link";
 import {
     Select,
@@ -16,13 +19,23 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { templatesData } from "@/lib/data";
 // Template data
+import { toast } from "sonner";
+
+import { useSiteStore } from "@/lib/stores/site-store";
 
 // Get all unique categories
 const allCategories = Array.from(
     new Set(templatesData.flatMap((template) => template.categories))
 );
 
-export default function TemplatesPage({ subdomain }: { subdomain: string }) {
+import { fetchSiteDataAction } from "@/lib/actions/actions";
+import { Site } from "@prisma/client";
+
+import { useTemplateStore } from "@/lib/stores/create-form-store";
+export default function TemplatesComp({ subdomain }: { subdomain: string }) {
+    const { publicKey } = useWallet();
+    const userWalletAddress = publicKey?.toBase58() || "";
+
     const url = `${subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`;
 
     const router = useRouter();
@@ -31,6 +44,42 @@ export default function TemplatesPage({ subdomain }: { subdomain: string }) {
         null
     );
     const [filteredTemplates, setFilteredTemplates] = useState(templatesData);
+
+    const [siteData, setSiteData] = useState<Site | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    const { currentSiteData, setCurrentSiteData } = useSiteStore();
+
+    const { selectedTemplateId, setSelectedTemplateId } = useTemplateStore();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (subdomain == null || subdomain == "Your Site") return;
+            if (
+                currentSiteData != null &&
+                currentSiteData?.subdomain == subdomain
+            ) {
+                return;
+            }
+            try {
+                const result = await fetchSiteDataAction(subdomain);
+
+                if (result) {
+                    setSiteData(result);
+                    setCurrentSiteData(result);
+                } else {
+                    toast.error("Site not found");
+                }
+                console.log("site data", result);
+            } catch (error) {
+                toast.error("Failed to fetch site data");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [subdomain, publicKey]);
 
     // Filter templatesData based on search query and selected category
     useEffect(() => {
@@ -55,6 +104,52 @@ export default function TemplatesPage({ subdomain }: { subdomain: string }) {
     // const handleTemplateClick = (templateId: string) => {
     //     router.push(`/dashboard/preview/${templateId}`);
     // };
+
+    async function selectTemplate(templateId: string) {
+        try {
+            // check if subdomain is "your site" means in form creating
+            if (subdomain == "Your Site") {
+                setSelectedTemplateId(templateId);
+                toast.success("Template Selected Successfully");
+                return;
+            }
+
+            if (!publicKey) {
+                toast.error("please connect wallet first...");
+                return;
+            }
+            console.log("templateId", templateId);
+            console.log(
+                "currentSiteData?.templateId",
+                currentSiteData?.templateId
+            );
+
+            if (templateId === currentSiteData?.templateId) {
+                toast.warning("This Template is Already Active...");
+                return;
+            }
+            console.log("updating template", templateId, currentSiteData);
+            // Use existing update action
+            const updatedSite = await updateSiteAction(
+                {
+                    id: currentSiteData?.id || "",
+                    templateId: templateId,
+                },
+                userWalletAddress
+            );
+            const message = templateId + " set as new theme ✅";
+            toast.success(message);
+
+            // update the templateId field in currentSiteData
+            setCurrentSiteData((prev) => ({
+                ...prev!,
+                templateId: templateId,
+            }));
+        } catch (error) {
+            console.log("Error selecting template:", error);
+            toast.error("Error selecting template...");
+        }
+    }
 
     return (
         <div className="min-h-screen bg-[#0a0b24] text-white p-6">
@@ -110,42 +205,66 @@ export default function TemplatesPage({ subdomain }: { subdomain: string }) {
                 {/* Templates grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredTemplates.map((template) => (
-                        <Link
+                        <div
                             key={template.id}
-                            className="border border-[#2a2c57] rounded-xl overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]"
-                            target="_blank"
-                            href={`/dashboard/preview/${template.id}`}
+                            className="group border border-[#2a2c57] rounded-xl overflow-hidden transition-transform hover:scale-[1.02] relative"
                         >
-                            <div className="relative">
-                                <div className="relative h-[220px] w-full bg-[#141539] overflow-hidden">
-                                    <Image
-                                        src={
-                                            template?.image ||
-                                            "/template-placeholder2.png"
-                                        }
-                                        alt={template.name}
-                                        fill
-                                        className="object-cover"
-                                    />
+                            <div className="relative h-[220px] w-full bg-[#141539] overflow-hidden">
+                                <Image
+                                    src={
+                                        template?.image ||
+                                        "/template-placeholder2.png"
+                                    }
+                                    alt={template.name}
+                                    fill
+                                    className="object-cover"
+                                />
 
-                                    {/* Browser-like UI elements */}
-                                    <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-2 bg-[#0a0b24]/80">
-                                        <div className="flex items-center space-x-1">
-                                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                        </div>
-                                        <div className="w-2 h-2 rounded-full bg-white/50"></div>
+                                {/* Browser-like UI elements */}
+                                <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-2 bg-[#0a0b24]/80">
+                                    <div className="flex items-center space-x-1">
+                                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                        <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
                                     </div>
-                                    {template.featured && (
-                                        <div className="absolute top-4 left-0">
-                                            <Badge className="bg-yellow-500 text-black rounded-r-md rounded-l-none px-3 py-1">
-                                                Featured
-                                            </Badge>
-                                        </div>
-                                    )}
+                                    <div className="w-2 h-2 rounded-full bg-white/50"></div>
                                 </div>
+
+                                {/* Hover overlay */}
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity w-full   flex items-center justify-center gap-4">
+                                    <Link
+                                        href={`/templates/preview/${template.id}`}
+                                        target="_blank"
+                                        onClick={() => {
+                                            localStorage.setItem(
+                                                "previousPath",
+                                                window.location.pathname
+                                            );
+                                        }}
+                                        className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
+                                    >
+                                        Preview
+                                    </Link>
+                                    <button
+                                        onClick={() => {
+                                            selectTemplate(template.id);
+                                        }}
+                                        type="button"
+                                        className="px-4 cursor-pointer py-2 bg-green-500 rounded-lg hover:bg-green-600 transition-colors"
+                                    >
+                                        Select Theme
+                                    </button>
+                                </div>
+
+                                {template.featured && (
+                                    <div className="absolute top-4 left-0">
+                                        <Badge className="bg-yellow-500 text-black rounded-r-md rounded-l-none px-3 py-1">
+                                            Featured
+                                        </Badge>
+                                    </div>
+                                )}
                             </div>
+
                             <div className="p-4 bg-[#0a0b24]">
                                 <h3 className="text-lg font-medium text-center">
                                     {template.name}
@@ -154,7 +273,7 @@ export default function TemplatesPage({ subdomain }: { subdomain: string }) {
                                     {template.price} {template.currency}
                                 </p>
                             </div>
-                        </Link>
+                        </div>
                     ))}
                 </div>
                 {filteredTemplates.length === 0 && (

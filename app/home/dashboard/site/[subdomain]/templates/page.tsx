@@ -1,11 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 import TemplatesComp from "@/components/dashboard/TemplatesComp";
-export default async function Templates({
+
+export default async function SitePage({
     params,
 }: {
-    params: { subdomain: string };
+    params: Promise<{ subdomain: string }>;
 }) {
-    const subdomain = params?.subdomain;
+    const { subdomain } = await params;
 
     return (
         <div className=" ">

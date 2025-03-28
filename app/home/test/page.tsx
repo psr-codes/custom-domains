@@ -1,27 +1,16 @@
-import prisma from "@/lib/prisma";
-// import A from "@/components/templates/test-templates/A";
+import A from "@/components/templates/neon-fi/neon-fi";
 // import B from "@/components/templates/default1";
-
-export default async function SitePage({
-    params,
-}: {
-    params: Promise<{ subdomain: string }>;
-}) {
-    const { subdomain } = await params;
-
-    // Fetch site data from the database (uncomment and adjust as needed)
-    // const site = await prisma.site.findUnique({
-    //   where: { subdomain },
-    // });
-
-    // if (!site) {
-    //   return <div>{subdomain} Site not found</div>;
-    // }
+import { fetchSiteDataAction } from "@/lib/actions/actions";
+export default async function SitePage() {
+    const subdomain = "babybaby";
+    // const { subdomain } = await params;
+    const siteData = await fetchSiteDataAction(subdomain);
+    console.log("siteData:", siteData);
 
     return (
         <div className=" ">
             {/* <B subdomain={subdomain} /> */}
-            {/* <B /> */}
+            <A siteData={siteData} />
             hello
         </div>
     );

@@ -33,6 +33,7 @@ export const createSiteAction = async (
         subdomain: string;
         description: string;
         logo: string;
+        templateId: string | null;
         socials: {
             twitter: string;
             discord: string;
@@ -58,7 +59,7 @@ export const createSiteAction = async (
                 logoUrl: formData.logo,
                 socials: formData.socials, // Store as JSON
                 tokenomics: formData.tokenomics, // Store as JSON
-                templateId: "default0", // Default template ID
+                templateId: formData.templateId || "default1", // Default template ID
                 templateData: {}, // Default empty JSON
                 owner: {
                     connect: { walletAddress: userWalletAddress },
@@ -135,20 +136,26 @@ export const fetchAllSitesAction = async (userWalletAddress: string) => {
 
 // ******************* update data *********************************
 // lib/actions/actions.ts
-export async function updateSiteAction(updateData: {
-    id: string;
-    name?: string;
-    description?: string;
-    logoUrl?: string;
-    socials?: any;
-    tokenomics?: any;
-    templateId?: string;
-    templateData?: any;
-}) {
+export async function updateSiteAction(
+    updateData: {
+        id: string;
+        name?: string;
+        description?: string;
+        logoUrl?: string;
+        socials?: any;
+        tokenomics?: any;
+        templateId?: string;
+        templateData?: any;
+    },
+    userWalletAddress: string
+) {
     const { id, ...data } = updateData;
 
     const updated = await prisma.site.update({
-        where: { id },
+        where: {
+            id,
+            ownerWalletAddress: userWalletAddress, // Ensures ownership
+        },
         data: {
             ...data,
             socials: data.socials ? data.socials : undefined,

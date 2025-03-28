@@ -5,6 +5,8 @@ import { Site } from "@prisma/client";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import EditSiteForm from "@/components/dashboard/EditSiteForm";
+import { useSiteStore } from "@/lib/stores/site-store";
+
 export default function SitePage({
     params,
 }: {
@@ -14,6 +16,8 @@ export default function SitePage({
     const [siteData, setSiteData] = useState<Site | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const { currentSiteData, setCurrentSiteData } = useSiteStore();
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -22,6 +26,7 @@ export default function SitePage({
 
                 if (result) {
                     setSiteData(result);
+                    setCurrentSiteData(result);
                 } else {
                     toast.error("Site not found");
                 }

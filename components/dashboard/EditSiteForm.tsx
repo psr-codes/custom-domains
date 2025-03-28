@@ -17,6 +17,7 @@ interface EditSiteFormProps {
         tokenomics: any;
     };
 }
+import { useWallet } from "@solana/wallet-adapter-react";
 
 export default function EditSiteForm({ site }: EditSiteFormProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,6 +66,7 @@ export default function EditSiteForm({ site }: EditSiteFormProps) {
         return true;
     };
 
+    const { publicKey } = useWallet();
     const getChangedFields = () => {
         const changed: Partial<typeof formData> = {};
         const current = {
@@ -99,6 +101,12 @@ export default function EditSiteForm({ site }: EditSiteFormProps) {
         setIsSubmitting(true);
 
         try {
+            if (!publicKey) {
+                toast.warning("please login with wallet first");
+                return;
+            }
+            const userWalletAddress = publicKey?.toBase58() || "";
+
             const changedFields = getChangedFields();
             console.log("changed fields", changedFields);
 
@@ -125,7 +133,10 @@ export default function EditSiteForm({ site }: EditSiteFormProps) {
             if (changedFields.tokenomics)
                 updateData.tokenomics = changedFields.tokenomics;
 
-            const updatedSite = await updateSiteAction(updateData);
+            const updatedSite = await updateSiteAction(
+                updateData,
+                userWalletAddress
+            );
 
             toast.success("Site updated successfully!");
             console.log("updatedSite", updatedSite);

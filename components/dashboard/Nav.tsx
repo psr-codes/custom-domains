@@ -73,13 +73,13 @@ export default function Nav({ children }: { children: ReactNode }) {
         }
         return [
             {
-                name: "Overview",
+                name: "Create New Site",
                 href: "/dashboard",
                 isActive: segments.length === 0,
                 icon: <LayoutDashboard width={18} />,
             },
             {
-                name: "Sites",
+                name: "All Sites",
                 href: "/dashboard/sites",
                 isActive: segments[0] === "sites",
                 icon: <Globe width={18} />,
